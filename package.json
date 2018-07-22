@@ -1,0 +1,34 @@
+{
+  "name": "chat-app",
+  "version": "1.2.1",
+  "private": true,
+  "dependencies": {
+    "create-react-app": "^1.5.2",
+    "express": "^4.16.3",
+    "lodash": "^4.17.10",
+    "react": "^15.6.2",
+    "react-dom": "^15.6.2",
+    "react-icons": "^2.2.7",
+    "react-scripts": "^1.1.4",
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "start": "node src/server/index.js",
+    "dev": "concurrently 'npm run react' 'npm run localServer'",
+    "react": "react-scripts start",
+    "server": "nodemon src/server/index.js",
+    "localServer": "nodemon src/server/indexLocal.js",
+    "build": "react-scripts build",
+    "styles": "node-sass --output-style compressed --include-path scss src/styles/index.scss src/index.css",
+    "styles:w": "nodemon -e scss -x \"npm run styles\"",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "concurrently": "^3.6.0",
+    "node-sass": "^4.7.2",
+    "nodemon": "^1.18.2"
+  }
+}
