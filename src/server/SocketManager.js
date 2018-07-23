@@ -2,12 +2,12 @@ const io = require('./indexLocal.js').io
 //const io = require('./index.js').io
 const { VERIFY_USER, USER_CONNECTED, USER_DISCONNECTED, 
 		LOGOUT, COMMUNITY_CHAT,NEW_COMMUNITY_CHAT, MESSAGE_RECIEVED, MESSAGE_SENT,
-		TYPING, PRIVATE_MESSAGE, NEW_CHAT_USER  } = require('../Events')
+		TYPING, PRIVATE_MESSAGE, NEW_CHAT_USER,TOPIC_CREATED,TOPIC_DELETED  } = require('../Events')
 
 const { createUser, createMessage, createChat } = require('../Factories')
 
 let connectedUsers = { }
-
+var topics = { } 
 let communityChat = createChat({ isCommunity:true })
 
 
@@ -68,8 +68,10 @@ module.exports = function(socket){
 		callback(communityChat)
 	})
 
-	socket.on(NEW_COMMUNITY_CHAT, ({chatName})=>{
-		createChat({name:chatName , isCommunity:true })
+	socket.on(NEW_COMMUNITY_CHAT,(addChat)=>{
+		const newChat = createChat({name:"chatName" , isCommunity:true });
+		addChat(newChat,false);
+		io.emit(TOPIC_CREATED,topics)
 	})
 
 	socket.on(MESSAGE_SENT, ({chatId, message})=>{
@@ -81,12 +83,14 @@ module.exports = function(socket){
 	})
 
 	socket.on(PRIVATE_MESSAGE, ({reciever, sender, activeChat})=>{
+		console.log("Private message socket");
 		if(reciever in connectedUsers){
 			const recieverSocket = connectedUsers[reciever].socketId
 			if(activeChat === null || activeChat.id === communityChat.id){
 				const newChat = createChat({ name:`${reciever}&${sender}`, users:[reciever, sender] })
 				socket.to(recieverSocket).emit(PRIVATE_MESSAGE, newChat)
 				socket.emit(PRIVATE_MESSAGE, newChat)
+				console.log("new private chat created");
 			}else{
 				if(!(reciever in activeChat.users)){
 					activeChat.users
@@ -97,7 +101,8 @@ module.exports = function(socket){
 										} )
 										socket.emit(NEW_CHAT_USER, { chatId: activeChat.id, newUser: reciever } )
 				}
-				socket.to(recieverSocket).emit(PRIVATE_MESSAGE, activeChat)
+				socket.to(recieverSocket).emit(PRIVATE_MESSAGE, activeChat);
+				console.log("add person to private chat")
 			}
 		}
 	})
@@ -112,8 +117,11 @@ function sendTypingToChat(user){
 
 function sendMessageToChat(sender){
 	return (chatId, message)=>{
+
+		console.log("message send "+ `${MESSAGE_RECIEVED}-${chatId}`)
 		io.emit(`${MESSAGE_RECIEVED}-${chatId}`, createMessage({message, sender}))
 	}
+	
 }
 
 function addUser(userList, user){
@@ -127,7 +135,11 @@ function removeUser(userList, username){
 	delete newList[username]
 	return newList
 }
-
+function deleteTopic(topicList, topicId){
+	var newList = Object.assign({}, userList) ;
+	delete newList[topicId];
+	return newList;
+}
 function isUser(userList, username){
   	return username in userList
 }

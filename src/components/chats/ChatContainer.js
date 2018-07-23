@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import SideBar from '../sidebar/SideBar'
 import { COMMUNITY_CHAT,NEW_COMMUNITY_CHAT, MESSAGE_SENT, MESSAGE_RECIEVED, 
 				TYPING, PRIVATE_MESSAGE, USER_CONNECTED, USER_DISCONNECTED,
-				NEW_CHAT_USER } from '../../Events'
+				NEW_CHAT_USER,TOPIC_CREATED,TOPIC_DELETED } from '../../Events'
 import ChatHeading from './ChatHeading'
 import Messages from '../messages/Messages'
 import MessageInput from '../messages/MessageInput'
@@ -13,7 +13,7 @@ export default class ChatContainer extends Component {
 	  super(props);	
 	
 	  this.state = {
-		  chats:[],
+		  chats:[], //clouddan cek bunu 
 		  users:[],
 	  	activeChat:null
 	  }
@@ -30,22 +30,32 @@ export default class ChatContainer extends Component {
 		socket.off(USER_CONNECTED)
 		socket.off(USER_DISCONNECTED)
 		socket.off(NEW_CHAT_USER)
+		socket.off(TOPIC_CREATED)
+		socket.off(TOPIC_DELETED)
 	}
 	
 	initSocket(socket){
-		socket.emit(COMMUNITY_CHAT, this.resetChat)
+		socket.emit(COMMUNITY_CHAT, this.addChat)
 		socket.on(PRIVATE_MESSAGE, this.addChat)
 		socket.on('connect', ()=>{
-			socket.emit(COMMUNITY_CHAT, this.resetChat)
-		})
+			socket.emit(COMMUNITY_CHAT, this.addChat)
+		});
 		socket.on(USER_CONNECTED, (users)=>{
 			this.setState({ users: values(users) })
-		})
+		});
 		socket.on(USER_DISCONNECTED, (users)=>{
 			const removedUsers = differenceBy( this.state.users, values(users), 'id')
 			this.removeUsersFromChat(removedUsers)
 			this.setState({ users: values(users) })			
-		})
+		});
+		socket.on(TOPIC_CREATED,(chats)=>{
+			this.setState({chats: values(chats)})
+		});
+		socket.on(TOPIC_DELETED, (chats)=>{
+			//const deletedTopic = differenceBy( this.state.users, values(users), 'id')
+			//this.removeTopicsFromChat(deletedTopic)
+			//this.setState({ chats: values(users) })			
+		});
 		socket.on(NEW_CHAT_USER, this.addUserToChat)
 	}
 
@@ -61,9 +71,11 @@ doldur burayi
 */
 
 	openPublicMessage = (chatName)=>{
-		const{socket , user} = this.props;
-		const{activeChat } = this.state;
-		socket.emit(NEW_COMMUNITY_CHAT, {chatName,activeChat});
+		const{socket} = this.props;
+		const addChat = this.addChat;
+		//const{activeChat } = this.state;
+		socket.emit(NEW_COMMUNITY_CHAT,addChat);
+		
 	}
 	addUserToChat = ({ chatId, newUser }) => {
 		const { chats } = this.state
@@ -85,6 +97,7 @@ doldur burayi
 	}
 
 	resetChat = (chat)=>{
+		console.log("reset chat")
 		return this.addChat(chat, true)
 	}
 
@@ -93,13 +106,14 @@ doldur burayi
 		const { chats } = this.state
 
 		const newChats = reset ? [chat] : [...chats, chat]
-		this.setState({chats:newChats, activeChat:reset ? chat : this.state.activeChat})
+		this.setState({chats:newChats, activeChat:chat})
 
 		const messageEvent = `${MESSAGE_RECIEVED}-${chat.id}`
 		const typingEvent = `${TYPING}-${chat.id}`
 
 		socket.on(typingEvent, this.updateTypingInChat(chat.id))
 		socket.on(messageEvent, this.addMessageToChat(chat.id))
+		console.log("chat created with addChat method messageEvent:"+messageEvent+" reset: " +reset )
 	}
 
 	addMessageToChat = (chatId)=>{
