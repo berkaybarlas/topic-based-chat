@@ -8,6 +8,7 @@ import Messages from '../messages/Messages'
 import MessageInput from '../messages/MessageInput'
 import { values, difference, differenceBy } from 'lodash'
 
+
 export default class ChatContainer extends Component {
 	constructor(props) {
 	  super(props);	
@@ -48,8 +49,9 @@ export default class ChatContainer extends Component {
 			this.removeUsersFromChat(removedUsers)
 			this.setState({ users: values(users) })			
 		});
-		socket.on(TOPIC_CREATED,(chats)=>{
-			this.setState({chats: values(chats)})
+		socket.on(TOPIC_CREATED,(chat)=>{
+			//this.setState({chats: values(chats)})
+			this.addChat(chat,false);
 		});
 		socket.on(TOPIC_DELETED, (chats)=>{
 			//const deletedTopic = differenceBy( this.state.users, values(users), 'id')
@@ -70,7 +72,7 @@ doldur burayi
 
 */
 
-	openPublicMessage = (chatName)=>{
+	openPublicMessage = (chatName) => {
 		const{socket} = this.props;
 		const addChat = this.addChat;
 		//const{activeChat } = this.state;
@@ -104,7 +106,7 @@ doldur burayi
 	addChat = (chat, reset = false)=>{
 		const { socket } = this.props
 		const { chats } = this.state
-
+		
 		const newChats = reset ? [chat] : [...chats, chat]
 		this.setState({chats:newChats, activeChat:chat})
 
@@ -116,8 +118,9 @@ doldur burayi
 		console.log("chat created with addChat method messageEvent:"+messageEvent+" reset: " +reset )
 	}
 
-	addMessageToChat = (chatId)=>{
+	addMessageToChat = (chatId)=>{                    
 		return message => {
+			console.log("new message2")
 			const { chats } = this.state
 			let newChats = chats.map((chat)=>{
 				if(chat.id === chatId)
@@ -153,6 +156,7 @@ doldur burayi
 	sendMessage = (chatId, message)=>{
 		const { socket } = this.props
 		socket.emit(MESSAGE_SENT, {chatId, message} )
+		console.log("send message")
 	}
 	
 	sendTyping = (chatId, isTyping)=>{

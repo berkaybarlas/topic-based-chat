@@ -10,7 +10,6 @@ const createUser = ({name = "", socketId = null } = {})=>(
 	}
 )
 
-
 const createMessage = ({message = "", sender = ""} = { })=>(
 		{
 			id:uuidv4(),
@@ -21,8 +20,7 @@ const createMessage = ({message = "", sender = ""} = { })=>(
 
 	)
 
-
-const createChat = ({messages = [], name = "Community", users = [], isCommunity = false} = {})=>(
+const createChat = ({messages = [], name = "Commuunity", users = [], isCommunity = false} = {})=>(
 	{
 		id:uuidv4(),
 		name: isCommunity ? name : createChatNameFromUsers(users),
@@ -32,7 +30,6 @@ const createChat = ({messages = [], name = "Community", users = [], isCommunity 
 		isCommunity
 	}
 )
-
 
 const createChatNameFromUsers = (users, excludedUser = "") => {
 	return users.filter(u => u !== excludedUser).join(' & ') || "Empty Chat"

@@ -6,7 +6,8 @@ import MdEject from 'react-icons/lib/md/eject'
 import FAPLUS from 'react-icons/lib/fa/plus'
 import SideBarOption from './SideBarOption'
 import { last, get, differenceBy } from 'lodash' 
-import { createChatNameFromUsers, createChat } from '../../Factories'
+import { createChatNameFromUsers} from '../../Factories'
+
 export default class SideBar extends Component{
 	static type = {
 		USERS:"users",
@@ -104,12 +105,9 @@ export default class SideBar extends Component{
 							<MdEject/>	
 						</div>
 
-						<div 
-							title="AddChat" className="createChat"
+						<div title="AddChat" className="createChat"
 							onClick={()=>{
-								createChat([],"Testchat",[],true);
 								this.props.openPublicMessage("testChat");
-								console.log("new chat created!");
 							}} >
 							{()=>{return (
 								<SideBarOption

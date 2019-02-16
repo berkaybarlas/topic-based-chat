@@ -70,11 +70,11 @@ module.exports = function(socket){
 
 	socket.on(NEW_COMMUNITY_CHAT,(addChat)=>{
 		const newChat = createChat({name:"chatName" , isCommunity:true });
-		addChat(newChat,false);
-		io.emit(TOPIC_CREATED,topics)
+		io.emit(TOPIC_CREATED,newChat)
 	})
 
 	socket.on(MESSAGE_SENT, ({chatId, message})=>{
+		console.log("meesage_sent")
 		sendMessageToChatFromUser(chatId, message)
 	})
 
@@ -116,9 +116,7 @@ function sendTypingToChat(user){
 }
 
 function sendMessageToChat(sender){
-	return (chatId, message)=>{
-
-		console.log("message send "+ `${MESSAGE_RECIEVED}-${chatId}`)
+	return (chatId, message)=>{	
 		io.emit(`${MESSAGE_RECIEVED}-${chatId}`, createMessage({message, sender}))
 	}
 	
